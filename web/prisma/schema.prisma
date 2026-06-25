@@ -1,0 +1,105 @@
+// Magic Dojo — MTG singles shop schema
+// docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// A single card listing (one Scryfall printing = one Product)
+model Product {
+  id              Int      @id @default(autoincrement())
+  scryfallId      String   @unique
+  oracleId        String?
+  name            String
+  setCode         String
+  setName         String
+  collectorNumber String?
+  colors          String   @default("") // comma list e.g. "W,U"; "" = colorless
+  rarity          String?
+  typeLine        String?
+  imageUrl        String?
+  imageBackUrl    String?
+
+  // Prices in USD pulled from Scryfall (source of truth for auto-pricing)
+  priceUsd     Float?
+  foilPriceUsd Float?
+
+  // Optional manual THB overrides (win over auto fx conversion when set)
+  priceOverrideThb     Float?
+  foilPriceOverrideThb Float?
+
+  // Live stock counts
+  stock     Int @default(0) // non-foil quantity on hand
+  foilStock Int @default(0) // foil quantity on hand
+
+  featured  Boolean  @default(false)
+  preorder  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  @@index([setCode])
+  @@index([name])
+}
+
+// Registered customers / shop staff
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  address      String?
+  isAdmin      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  orders Order[]
+}
+
+// Customer orders
+model Order {
+  id           String   @id // human-friendly e.g. MD-7F3A9C
+  createdAt    DateTime @default(now())
+  userId       Int?
+  user         User?    @relation(fields: [userId], references: [id])
+  customerName String
+  email        String?
+  phone        String?
+  address      String?
+  note         String?
+  subtotalThb  Float
+  shippingThb  Float
+  totalThb     Float
+  payMethod    String   @default("transfer") // transfer | promptpay | stripe
+  status       String   @default("pending") // pending | paid | shipped | cancelled
+
+  items OrderItem[]
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id           Int     @id @default(autoincrement())
+  orderId      String
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    Int
+  product      Product @relation(fields: [productId], references: [id])
+  name         String
+  setCode      String
+  finish       String  // nonfoil | foil
+  unitPriceThb Float
+  qty          Int
+}
+
+// Key/value app settings (e.g. fxRate, shopName)
+model Setting {
+  key   String @id
+  value String
+}

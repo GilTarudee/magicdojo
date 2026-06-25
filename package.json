@@ -1,0 +1,7 @@
+{
+  "name": "magicdojo-root",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix web run dev"
+  }
+}
