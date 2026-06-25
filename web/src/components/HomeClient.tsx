@@ -6,13 +6,7 @@ import { useStore } from "@/lib/store";
 import ProductCard from "@/components/ProductCard";
 import type { CardView } from "@/lib/products";
 
-export default function HomeClient({
-  featured,
-  isAdmin = false,
-}: {
-  featured: CardView[];
-  isAdmin?: boolean;
-}) {
+export default function HomeClient({ featured }: { featured: CardView[] }) {
   const { L } = useStore();
 
   return (
@@ -60,22 +54,6 @@ export default function HomeClient({
             >
               {L.heroCta} →
             </Link>
-            {isAdmin && (
-              <Link
-                href="/admin"
-                style={{
-                  background: "var(--panel)",
-                  color: "var(--ink)",
-                  border: "var(--bw) solid var(--line)",
-                  padding: "12px 22px",
-                  borderRadius: "var(--btnr)",
-                  fontWeight: 600,
-                  fontSize: 14,
-                }}
-              >
-                {L.heroCta2}
-              </Link>
-            )}
           </div>
         </div>
         <div
