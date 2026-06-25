@@ -22,7 +22,7 @@ export default function Header() {
 
   const navItems = [
     { href: "/shop", label: "Magic: The Gathering", match: ["/shop", "/product"] },
-    { href: "/admin", label: L.adminTitle, match: ["/admin"] },
+    ...(me?.isAdmin ? [{ href: "/admin", label: L.adminTitle, match: ["/admin"] }] : []),
   ];
 
   return (
