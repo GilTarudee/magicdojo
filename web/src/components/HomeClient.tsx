@@ -34,31 +34,12 @@ export default function HomeClient({ featured }: { featured: CardView[] }) {
           }}
         />
         <div style={{ position: "relative" }}>
-          <div
-            className="md-num"
-            style={{
-              display: "inline-block",
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: ".06em",
-              color: "var(--accent)",
-              border: "var(--bw) solid var(--line)",
-              borderRadius: 999,
-              padding: "5px 12px",
-              marginBottom: 18,
-            }}
-          >
-            {L.heroKicker}
-          </div>
           <h1
             className="md-head"
-            style={{ fontSize: 52, lineHeight: 1.02, margin: "0 0 14px" }}
+            style={{ fontSize: 52, lineHeight: 1.02, margin: "0 0 26px" }}
           >
             {L.heroTitle}
           </h1>
-          <p style={{ fontSize: 16, color: "var(--muted)", maxWidth: 440, margin: "0 0 26px" }}>
-            {L.heroSub}
-          </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Link
               href="/shop"
@@ -87,19 +68,6 @@ export default function HomeClient({ featured }: { featured: CardView[] }) {
             >
               {L.heroCta2}
             </Link>
-          </div>
-          <div style={{ display: "flex", gap: 34, marginTop: 30 }}>
-            {L.heroStats.map((s) => (
-              <div key={s.num}>
-                <div
-                  className="md-num"
-                  style={{ fontSize: 26, fontWeight: 600, color: "var(--ink)" }}
-                >
-                  {s.num}
-                </div>
-                <div style={{ fontSize: 12.5, color: "var(--muted)" }}>{s.label}</div>
-              </div>
-            ))}
           </div>
         </div>
         <div
@@ -133,32 +101,6 @@ export default function HomeClient({ featured }: { featured: CardView[] }) {
             }}
           />
         </div>
-      </section>
-
-      {/* value strip */}
-      <section className="md-values-grid" style={{ marginTop: 14 }}>
-        {L.valueProps.map((v) => (
-          <div
-            key={v.no}
-            style={{
-              border: "var(--bw) solid var(--line)",
-              borderRadius: "var(--radius)",
-              background: "var(--panel)",
-              padding: "18px 20px",
-            }}
-          >
-            <div
-              className="md-num"
-              style={{ fontSize: 13, fontWeight: 600, color: "var(--accent)", marginBottom: 8 }}
-            >
-              {v.no}
-            </div>
-            <div className="md-head" style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
-              {v.title}
-            </div>
-            <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.5 }}>{v.desc}</div>
-          </div>
-        ))}
       </section>
 
       {/* featured */}
