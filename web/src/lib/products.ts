@@ -127,6 +127,7 @@ export type AdminVariant = {
   finish: Finish;
   priceThb: number; // currently effective (override ?? market ?? 0)
   marketThb: number | null; // USD × fx, rounded (null if no USD price known)
+  costThb: number | null; // cost of goods (what shop paid)
   stock: number;
   manual: boolean; // a THB override is set
 };
@@ -163,6 +164,7 @@ export async function getAdminData(): Promise<AdminData> {
         finish: "nonfoil",
         priceThb: p.priceOverrideThb ?? nfMarket ?? 0,
         marketThb: nfMarket,
+        costThb: p.costThb,
         stock: p.stock,
         manual: p.priceOverrideThb != null,
       },
@@ -170,6 +172,7 @@ export async function getAdminData(): Promise<AdminData> {
         finish: "foil",
         priceThb: p.foilPriceOverrideThb ?? fMarket ?? 0,
         marketThb: fMarket,
+        costThb: p.foilCostThb,
         stock: p.foilStock,
         manual: p.foilPriceOverrideThb != null,
       },
@@ -202,6 +205,57 @@ export async function getAdminData(): Promise<AdminData> {
     fx,
     sets,
     stats: { skus: products.length, totalStock, lowStock },
+  };
+}
+
+export type ProfitReport = {
+  revenue: number; // total incl. shipping, from confirmed (paid/shipped) orders
+  cogs: number; // cost of goods sold
+  grossProfit: number; // revenue - cogs
+  expenses: number; // operating expenses in range
+  netProfit: number; // gross - expenses
+  orderCount: number;
+  expenseList: { id: number; date: string; label: string; category: string; amountThb: number }[];
+};
+
+// Profit/loss for a date range. Counts orders with status paid|shipped as realized sales.
+export async function getProfitReport(fromISO: string, toISO: string): Promise<ProfitReport> {
+  const from = new Date(fromISO);
+  const to = new Date(toISO);
+
+  const orders = await prisma.order.findMany({
+    where: { status: { in: ["paid", "shipped"] }, createdAt: { gte: from, lte: to } },
+    include: { items: true },
+  });
+
+  let revenue = 0;
+  let cogs = 0;
+  for (const o of orders) {
+    revenue += o.totalThb;
+    for (const it of o.items) cogs += it.unitCostThb * it.qty;
+  }
+
+  const expenseRows = await prisma.expense.findMany({
+    where: { date: { gte: from, lte: to } },
+    orderBy: { date: "desc" },
+  });
+  const expenses = expenseRows.reduce((s, e) => s + e.amountThb, 0);
+
+  const grossProfit = revenue - cogs;
+  return {
+    revenue,
+    cogs,
+    grossProfit,
+    expenses,
+    netProfit: grossProfit - expenses,
+    orderCount: orders.length,
+    expenseList: expenseRows.map((e) => ({
+      id: e.id,
+      date: e.date.toISOString(),
+      label: e.label,
+      category: e.category,
+      amountThb: e.amountThb,
+    })),
   };
 }
 

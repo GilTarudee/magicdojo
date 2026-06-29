@@ -37,6 +37,33 @@ export async function setStock(id: number, finish: Finish, value: number) {
   revalidatePath("/shop");
 }
 
+// Set the cost of goods (THB) for a finish. Pass null/empty to clear.
+export async function setCost(id: number, finish: Finish, value: number | null) {
+  await requireAdmin();
+  const v = value == null || !Number.isFinite(value) ? null : Math.max(0, Math.round(value));
+  await prisma.product.update({
+    where: { id },
+    data: finish === "foil" ? { foilCostThb: v } : { costThb: v },
+  });
+  revalidatePath("/admin");
+}
+
+export async function addExpense(input: { label: string; category: string; amountThb: number }) {
+  await requireAdmin();
+  const amount = Math.max(0, Math.round(Number(input.amountThb) || 0));
+  if (!input.label?.trim() || amount <= 0) return;
+  await prisma.expense.create({
+    data: { label: input.label.trim(), category: input.category || "other", amountThb: amount },
+  });
+  revalidatePath("/admin/profit");
+}
+
+export async function deleteExpense(id: number) {
+  await requireAdmin();
+  await prisma.expense.delete({ where: { id } });
+  revalidatePath("/admin/profit");
+}
+
 // Set a manual THB price override for a finish. Pass null to clear (back to market).
 export async function setPrice(id: number, finish: Finish, value: number | null) {
   await requireAdmin();

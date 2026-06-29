@@ -30,6 +30,10 @@ model Product {
   priceUsd     Float?
   foilPriceUsd Float?
 
+  // Cost of goods (what the shop paid per card) in THB — for profit calc
+  costThb     Float?
+  foilCostThb Float?
+
   // Optional manual THB overrides (win over auto fx conversion when set)
   priceOverrideThb     Float?
   foilPriceOverrideThb Float?
@@ -95,7 +99,20 @@ model OrderItem {
   setCode      String
   finish       String  // nonfoil | foil
   unitPriceThb Float
+  unitCostThb  Float   @default(0) // cost captured at time of sale (for profit)
   qty          Int
+}
+
+// Operating expenses (hosting, fees, shipping, rent, …) for the P&L report
+model Expense {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @default(now())
+  label     String
+  category  String   @default("other") // hosting | fees | shipping | rent | other
+  amountThb Float
+  createdAt DateTime @default(now())
+
+  @@index([date])
 }
 
 // Key/value app settings (e.g. fxRate, shopName)

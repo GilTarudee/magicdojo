@@ -39,6 +39,7 @@ export async function placeOrder(input: CheckoutInput): Promise<PlaceOrderResult
       setCode: string;
       finish: "nonfoil" | "foil";
       unitPriceThb: number;
+      unitCostThb: number;
       qty: number;
     }[] = [];
     const issues: string[] = [];
@@ -55,12 +56,14 @@ export async function placeOrder(input: CheckoutInput): Promise<PlaceOrderResult
       const usd = it.finish === "foil" ? p.foilPriceUsd : p.priceUsd;
       const override = it.finish === "foil" ? p.foilPriceOverrideThb : p.priceOverrideThb;
       const unit = override ?? (usd != null ? roundBaht(usd * fx) : 0);
+      const cost = (it.finish === "foil" ? p.foilCostThb : p.costThb) ?? 0;
       lines.push({
         productId: p.id,
         name: p.name,
         setCode: p.setCode,
         finish: it.finish,
         unitPriceThb: unit,
+        unitCostThb: cost,
         qty,
       });
     }
@@ -96,6 +99,7 @@ export async function placeOrder(input: CheckoutInput): Promise<PlaceOrderResult
               setCode: l.setCode,
               finish: l.finish,
               unitPriceThb: l.unitPriceThb,
+              unitCostThb: l.unitCostThb,
               qty: l.qty,
             })),
           },

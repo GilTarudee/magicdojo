@@ -83,7 +83,9 @@ Shipping: ฿50 flat, free for orders ≥ ฿1,000. Helpers live in `web/src/lib
   server actions are gated by `requireAdmin()`. Checkout prefills from and links orders to the
   logged-in user (`Order.userId`). Set `AUTH_SECRET` in `.env`. Seed accounts:
   `admin@magicdojo.local` / `admin1234` (admin), `test@magicdojo.local` / `test1234`.
+- ✅ **Cost tracking & P&L**: `Product.costThb`/`foilCostThb` (editable per-card in stock admin, shows margin); `OrderItem.unitCostThb` captured at checkout; `Expense` model (operating costs). `/admin/profit` (`ProfitClient`) shows Revenue − COGS = Gross − Expenses = Net for this-month / last-30 / this-year, plus an expense logger. Queries via `getProfitReport()` (counts paid+shipped orders). Verified end-to-end.
 - ⏳ **Phase 4 remainder — Card payments**: optional Stripe gateway (PromptPay QR already done).
+- ⏳ **Discussed next (not built): in-store POS** (web-based, shared inventory, offline-capable) for the physical shop; no buylist needed.
 - ⏳ **Phase 5 — Deploy**: switch Prisma to Postgres, deploy to Vercel, custom domain.
 - ✅ **Responsive**: layouts collapse on tablet/phone via helper classes in `globals.css`
   (`.md-hero-layout`, `.md-sidebar-layout`, `.md-cart-layout`, `.md-checkout-layout`,

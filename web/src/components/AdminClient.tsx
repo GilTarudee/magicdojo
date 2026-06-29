@@ -9,6 +9,7 @@ import type { AdminData, AdminCard } from "@/lib/products";
 import {
   setStock,
   setPrice,
+  setCost,
   setFeatured,
   setFxRate,
   resetMarketPrices,
@@ -137,6 +138,12 @@ export default function AdminClient({
             <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
               {L.manageOrders}
+            </span>
+          </Link>
+          <Link href="/admin/profit" style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 2, border: "var(--bw) solid var(--accent)", borderRadius: "var(--radius)", background: "transparent", color: "var(--accent)", padding: "12px 18px", fontWeight: 600, fontSize: 14 }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg>
+              {L.viewProfit}
             </span>
           </Link>
           {stats.map((st, i) => (
@@ -347,9 +354,21 @@ function VariantEditor({
   const { L } = useStore();
   const [price, setPriceVal] = useState(String(v.priceThb));
   const [stock, setStockVal] = useState(String(v.stock));
+  const [cost, setCostVal] = useState(v.costThb != null ? String(v.costThb) : "");
   const [manual, setManual] = useState(v.manual);
 
   const lowStock = v.stock > 0 && v.stock <= 3;
+  const costNum = cost.trim() === "" ? null : Number(cost);
+  const margin = costNum != null && Number.isFinite(costNum) ? Number(price) - costNum : null;
+  const marginPct = margin != null && Number(price) > 0 ? Math.round((margin / Number(price)) * 100) : null;
+
+  async function commitCost() {
+    if (cost.trim() === "") { await setCost(productId, v.finish, null); onRefresh(); return; }
+    const n = Number(cost);
+    if (!Number.isFinite(n)) { setCostVal(v.costThb != null ? String(v.costThb) : ""); return; }
+    await setCost(productId, v.finish, n);
+    onRefresh();
+  }
 
   async function commitPrice() {
     const n = Number(price);
@@ -385,6 +404,19 @@ function VariantEditor({
           <input type="number" min={0} value={stock} onChange={(e) => setStockVal(e.target.value)} onBlur={commitStock}
             className="md-num" style={{ width: 44, border: `var(--bw) solid ${lowStock ? "var(--accent)" : "var(--line)"}`, borderRadius: "var(--btnr)", background: "var(--bg)", padding: "5px 6px", fontSize: 12, color: lowStock ? "var(--accent)" : "var(--ink)", textAlign: "right", fontWeight: 600 }} />
         </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, paddingLeft: 54 }}>
+        <span style={{ fontSize: 9.5, color: "var(--muted)", flex: "none" }}>{L.costLabel}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <span style={{ fontSize: 9.5, color: "var(--muted)" }}>฿</span>
+          <input type="number" min={0} value={cost} onChange={(e) => setCostVal(e.target.value)} onBlur={commitCost} placeholder="—"
+            className="md-num" style={{ width: 50, border: "var(--bw) solid var(--line)", borderRadius: "var(--btnr)", background: "var(--bg)", padding: "3px 5px", fontSize: 11, color: "var(--ink)", textAlign: "right" }} />
+        </div>
+        {margin != null && (
+          <span className="md-num" style={{ fontSize: 9.5, marginLeft: "auto", fontWeight: 600, color: margin >= 0 ? "#1f8f4f" : "var(--accent)" }}>
+            {L.marginLabel} ฿{margin}{marginPct != null ? ` (${marginPct}%)` : ""}
+          </span>
+        )}
       </div>
       <div className="md-num" style={{ fontSize: 9, color: "var(--muted)", paddingLeft: 54 }}>
         {L.marketShort} {v.marketThb != null ? `฿${v.marketThb}` : "—"}
